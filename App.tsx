@@ -132,21 +132,21 @@ const App: React.FC = () => {
   return (
     <div className="min-h-screen pb-24">
       {/* Header */}
-      <header className="bg-red-700 text-white shadow-lg sticky top-0 z-40">
+      <header className="bg-amber-800 text-amber-50 shadow-lg sticky top-0 z-40">
         <div className="max-w-4xl mx-auto px-4 py-4">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div className="flex justify-between items-start">
               <div>
                 <h1 className="text-2xl font-bold tracking-tight">台南古早味 鍋燒</h1>
-                <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 text-red-100 text-sm mt-1">
-                  <a href="tel:0933038130" className="flex items-center gap-1 hover:text-white transition-colors">
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-6 text-amber-100 text-sm mt-1">
+                  <a href="tel:0933038130" className="flex items-center gap-1 hover:text-amber-50 transition-colors">
                     <Phone size={14} /> 0933-038-130
                   </a>
                   <a 
                     href="https://www.google.com/maps/search/?api=1&query=大里區文化街83-1號" 
                     target="_blank" 
                     rel="noreferrer"
-                    className="flex items-center gap-1 hover:text-white transition-colors"
+                    className="flex items-center gap-1 hover:text-amber-50 transition-colors"
                   >
                     <MapPin size={14} /> 大里區文化街83-1號
                   </a>
@@ -156,7 +156,7 @@ const App: React.FC = () => {
               {/* Mobile Admin Button (visible on small screens next to title) */}
               <button 
                 onClick={() => setIsAdminOpen(true)}
-                className="md:hidden p-2 text-red-200 hover:text-white bg-red-800/50 rounded-full"
+                className="md:hidden p-2 text-amber-200 hover:text-amber-50 bg-amber-900/40 rounded-full"
               >
                 <ClipboardList size={20} />
               </button>
@@ -166,12 +166,12 @@ const App: React.FC = () => {
                 {/* Search Bar */}
                 <div className="relative flex-1 md:w-64">
                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                      <Search size={16} className="text-red-300" />
+                       <Search size={16} className="text-amber-200" />
                    </div>
                    <input 
                       type="text" 
                       placeholder="搜尋菜單..." 
-                      className="w-full bg-red-800 text-white placeholder-red-300 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-red-400 focus:bg-red-900 transition-all"
+                        className="w-full bg-amber-900 text-amber-50 placeholder-amber-200 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:bg-amber-950 transition-all"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                    />
@@ -180,7 +180,7 @@ const App: React.FC = () => {
                 {/* Desktop Admin Button */}
                 <button 
                     onClick={() => setIsAdminOpen(true)}
-                    className="hidden md:flex items-center gap-2 px-3 py-2 text-sm font-medium text-red-100 hover:text-white bg-red-800 hover:bg-red-600 rounded-lg transition-colors"
+                      className="hidden md:flex items-center gap-2 px-3 py-2 text-sm font-medium text-amber-100 hover:text-amber-50 bg-amber-900 hover:bg-amber-700 rounded-lg transition-colors"
                     title="營運報表"
                 >
                     <ClipboardList size={18} />
@@ -191,7 +191,7 @@ const App: React.FC = () => {
         </div>
 
         {/* Category Tabs */}
-        <div className="bg-white/10 backdrop-blur-md overflow-x-auto no-scrollbar">
+        <div className="bg-amber-50/10 backdrop-blur-md overflow-x-auto no-scrollbar">
           <div className="max-w-4xl mx-auto px-4 flex whitespace-nowrap">
             {CATEGORIES_ORDER.map(category => (
               <button
@@ -203,8 +203,8 @@ const App: React.FC = () => {
                 }}
                 className={`py-3 px-4 text-sm font-bold border-b-2 transition-colors ${
                   activeCategory === category
-                    ? 'border-white text-white'
-                    : 'border-transparent text-red-100 hover:text-white'
+                    ? 'border-amber-50 text-amber-50'
+                    : 'border-transparent text-amber-100 hover:text-amber-50'
                 }`}
               >
                 {category}
@@ -225,7 +225,7 @@ const App: React.FC = () => {
           return (
             <section key={category} id={category} className="scroll-mt-36">
               <div className="flex items-center gap-4 mb-4">
-                <h2 className="text-xl font-bold text-gray-800 border-l-4 border-red-600 pl-3">
+                <h2 className="text-xl font-bold text-gray-800 border-l-4 border-amber-700 pl-3">
                   {category}
                 </h2>
                 <div className="h-px bg-gray-200 flex-1"></div>
@@ -256,12 +256,12 @@ const App: React.FC = () => {
       <div className="fixed bottom-6 right-6 z-40">
         <button
           onClick={() => setIsCartOpen(true)}
-          className="bg-gray-900 text-white rounded-full p-4 shadow-2xl hover:bg-black transition-transform hover:scale-105 active:scale-95 flex items-center gap-3 pr-6 relative group"
+          className="bg-amber-900 text-amber-50 rounded-full p-4 shadow-2xl hover:bg-amber-800 transition-transform hover:scale-105 active:scale-95 flex items-center gap-3 pr-6 relative group"
         >
           <div className="relative">
             <ShoppingCart size={24} />
             {totalItems > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-gray-900 animate-bounce">
+              <span className="absolute -top-2 -right-2 bg-amber-600 text-amber-50 text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-amber-900 animate-bounce">
                 {totalItems}
               </span>
             )}
@@ -270,7 +270,7 @@ const App: React.FC = () => {
              查看購物車
           </span>
           {cart.length > 0 && (
-              <span className="border-l border-gray-700 pl-3 text-sm font-normal text-gray-300">
+              <span className="border-l border-amber-800 pl-3 text-sm font-normal text-amber-100">
                   ${cart.reduce((sum, item) => sum + (item.basePrice + (item.isAddNoodle ? 10 : 0)) * item.quantity, 0)}
               </span>
           )}

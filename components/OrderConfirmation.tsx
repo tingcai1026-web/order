@@ -33,13 +33,13 @@ export const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ order, onC
         {/* Order Info & Number */}
         <div className="p-4 bg-green-50 border-b border-green-100 flex justify-between items-center shrink-0">
           <div>
-            <p className="text-xs text-green-800 font-bold uppercase tracking-wider mb-1">取餐號碼</p>
+            <p className="text-xs text-green-800 font-bold uppercase tracking-wider mb-1">?��??�碼</p>
             <p className="text-3xl font-black text-green-700">#{order.orderNumber}</p>
           </div>
           <div className="text-right">
              <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-bold ${
                 order.orderType === 'dine-in' 
-                  ? 'bg-red-100 text-red-700' 
+                  ? 'bg-amber-100 text-amber-700' 
                   : 'bg-orange-100 text-orange-700'
              }`}>
                 {order.orderType === 'dine-in' ? <Utensils size={14} /> : <ShoppingBag size={14} />}
@@ -70,7 +70,7 @@ export const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ order, onC
                       {item.name} <span className="text-gray-500">x{item.quantity}</span>
                     </div>
                     {item.isAddNoodle && (
-                      <div className="text-xs text-red-500">+ 加麵</div>
+                      <div className="text-xs text-amber-600">+ 加麵</div>
                     )}
                     {item.remarks && (
                       <div className="text-xs text-gray-500 mt-0.5 bg-gray-100 inline-block px-1.5 py-0.5 rounded">
@@ -88,11 +88,10 @@ export const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ order, onC
             <div className="border-t-2 border-dashed border-gray-200 pt-4 mt-4">
               <div className="flex justify-between items-center">
                 <span className="text-gray-600">總金額</span>
-                <span className="text-3xl font-bold text-red-600">${order.totalAmount}</span>
+                <span className="text-3xl font-bold text-amber-700">${order.totalAmount}</span>
               </div>
               <p className="text-xs text-center text-gray-400 mt-4">
-                請至櫃檯出示此畫面結帳
-              </p>
+                請至櫃檯出示此畫面結帳              </p>
             </div>
           </div>
         </div>
@@ -104,10 +103,11 @@ export const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ order, onC
             className="w-full bg-gray-900 text-white py-3.5 rounded-xl font-bold text-lg shadow-lg hover:bg-black active:scale-[0.98] transition-all flex items-center justify-center gap-2"
           >
             <Home size={20} />
-            <span>回到首頁 / 下一筆訂單</span>
+            <span>回到首頁 / 下一筆訂</span>
           </button>
         </div>
       </div>
     </div>
   );
 };
+

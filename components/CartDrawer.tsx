@@ -46,7 +46,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
       <div className="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-slide-in-right">
         
         {/* Header */}
-        <div className="p-4 border-b bg-red-600 text-white flex justify-between items-center shadow-md">
+        <div className="p-4 border-b bg-amber-700 text-amber-50 flex justify-between items-center shadow-md">
           <div className="flex items-center space-x-2">
             <ShoppingBag className="h-6 w-6" />
             <h2 className="text-xl font-bold">您的訂單</h2>
@@ -61,14 +61,14 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             <div className="flex bg-gray-200 rounded-lg p-1">
                 <button 
                     onClick={() => setOrderType('dine-in')}
-                    className={`flex-1 flex items-center justify-center space-x-2 py-2 rounded-md text-sm font-bold transition-all ${orderType === 'dine-in' ? 'bg-white text-red-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                    className={`flex-1 flex items-center justify-center space-x-2 py-2 rounded-md text-sm font-bold transition-all ${orderType === 'dine-in' ? 'bg-white text-amber-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                     <Utensils size={16} />
                     <span>內用</span>
                 </button>
                 <button 
                     onClick={() => setOrderType('takeout')}
-                    className={`flex-1 flex items-center justify-center space-x-2 py-2 rounded-md text-sm font-bold transition-all ${orderType === 'takeout' ? 'bg-white text-red-600 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                    className={`flex-1 flex items-center justify-center space-x-2 py-2 rounded-md text-sm font-bold transition-all ${orderType === 'takeout' ? 'bg-white text-amber-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
                 >
                     <ShoppingBag size={16} />
                     <span>外帶</span>
@@ -84,7 +84,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               <p className="text-lg">購物車是空的</p>
               <button 
                 onClick={onClose}
-                className="text-red-600 font-medium hover:underline"
+                className="text-amber-700 font-medium hover:underline"
               >
                 趕快去點餐吧！
               </button>
@@ -96,7 +96,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                   <div className="flex-1">
                     <h3 className="font-bold text-gray-800">{item.name}</h3>
                     {item.isAddNoodle && (
-                      <span className="inline-block bg-red-100 text-red-600 text-xs px-2 py-0.5 rounded mt-1">
+                      <span className="inline-block bg-amber-100 text-amber-700 text-xs px-2 py-0.5 rounded mt-1">
                         + 加麵 ($10)
                       </span>
                     )}
@@ -129,7 +129,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
                     <button 
                         onClick={() => removeFromCart(index)}
-                        className="text-gray-400 hover:text-red-500 p-2 transition-colors"
+                        className="text-gray-400 hover:text-amber-600 p-2 transition-colors"
                     >
                         <Trash2 size={18} />
                     </button>
@@ -142,7 +142,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                         placeholder="備註 (例如: 不要蔥, 小辣)"
                         value={item.remarks}
                         onChange={(e) => updateRemarks(index, e.target.value)}
-                        className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-red-500 focus:border-red-500 transition-all placeholder:text-gray-400"
+                        className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-all placeholder:text-gray-400"
                     />
                 </div>
               </div>
@@ -155,11 +155,11 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
           <div className="p-4 bg-white border-t shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
             <div className="flex justify-between items-end mb-4">
               <span className="text-gray-600">總計 ({cart.reduce((a, b) => a + b.quantity, 0)} 項)</span>
-              <span className="text-2xl font-bold text-red-600">${totalAmount}</span>
+              <span className="text-2xl font-bold text-amber-700">${totalAmount}</span>
             </div>
             <button
               onClick={onCheckout}
-              className="w-full bg-red-600 text-white py-3.5 rounded-xl font-bold text-lg shadow-lg shadow-red-200 active:scale-[0.98] hover:bg-red-700 transition-all flex items-center justify-center space-x-2"
+              className="w-full bg-amber-700 text-amber-50 py-3.5 rounded-xl font-bold text-lg shadow-lg shadow-amber-200 active:scale-[0.98] hover:bg-amber-800 transition-all flex items-center justify-center space-x-2"
             >
               <span>確認下單</span>
               <span>→</span>

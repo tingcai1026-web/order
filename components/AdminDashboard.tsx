@@ -162,7 +162,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                      <div className="flex justify-between items-start mb-2">
                        <div>
                          <span className="font-mono font-bold text-gray-500">#{order.orderNumber}</span>
-                         <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${order.orderType === 'dine-in' ? 'bg-red-100 text-red-600' : 'bg-orange-100 text-orange-600'}`}>
+                         <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${order.orderType === 'dine-in' ? 'bg-amber-100 text-amber-700' : 'bg-stone-200 text-stone-700'}`}>
                            {order.orderType === 'dine-in' ? '內用' : '外帶'}
                          </span>
                        </div>
@@ -193,7 +193,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     onClearHistory();
                 }
              }}
-             className="w-full flex items-center justify-center gap-2 text-red-600 bg-red-50 hover:bg-red-100 py-3 rounded-xl font-bold transition-colors"
+             className="w-full flex items-center justify-center gap-2 text-amber-800 bg-amber-100 hover:bg-amber-200 py-3 rounded-xl font-bold transition-colors"
            >
              <Trash2 size={20} />
              每日結帳 (清除資料)
