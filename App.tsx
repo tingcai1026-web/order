@@ -9,13 +9,21 @@ import { ShoppingCart, Phone, MapPin, Search, ClipboardList } from 'lucide-react
 
 const App: React.FC = () => {
   const [activeCategory, setActiveCategory] = useState<Category>(Category.NOODLES);
-  const [cart, setCart] = useState<CartItem[]>([]);
+  const [cart, setCart] = useState<CartItem[]>(() => {
+    const savedCart = localStorage.getItem('tainan_nabeyaki_cart');
+    return savedCart ? JSON.parse(savedCart) : [];
+  });
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isAdminOpen, setIsAdminOpen] = useState(false);
   const [orderType, setOrderType] = useState<OrderType>('dine-in');
   const [searchTerm, setSearchTerm] = useState('');
   const [completedOrder, setCompletedOrder] = useState<CompletedOrder | null>(null);
-  const [orderHistory, setOrderHistory] = useState<CompletedOrder[]>([]);
+
+  // Initialize history from local storage
+  const [orderHistory, setOrderHistory] = useState<CompletedOrder[]>(() => {
+    const savedOrders = localStorage.getItem('tainan_nabeyaki_orders');
+    return savedOrders ? JSON.parse(savedOrders) : [];
+  });
 
   // Initialize menu items from localStorage or constants
   const [menuItems, setMenuItems] = useState<MenuItem[]>(() => {
@@ -28,17 +36,10 @@ const App: React.FC = () => {
     localStorage.setItem('tainan_nabeyaki_menu', JSON.stringify(menuItems));
   }, [menuItems]);
 
-  // Load history from local storage on mount
+  // Save cart to local storage whenever it changes
   useEffect(() => {
-    const savedOrders = localStorage.getItem('tainan_nabeyaki_orders');
-    if (savedOrders) {
-      try {
-        setOrderHistory(JSON.parse(savedOrders));
-      } catch (e) {
-        console.error("Failed to parse order history", e);
-      }
-    }
-  }, []);
+    localStorage.setItem('tainan_nabeyaki_cart', JSON.stringify(cart));
+  }, [cart]);
 
   // Save history to local storage whenever it changes
   useEffect(() => {
