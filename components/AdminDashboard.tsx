@@ -1,4 +1,5 @@
 import React, { useMemo } from 'react';
+import * as XLSX from 'xlsx';
 import { CompletedOrder } from '../types';
 import { X, TrendingUp, ShoppingBag, DollarSign, ListOrdered, Trash2, Calendar, FileDown } from 'lucide-react';
 
@@ -9,11 +10,11 @@ interface AdminDashboardProps {
   onClearHistory: () => void;
 }
 
-export const AdminDashboard: React.FC<AdminDashboardProps> = ({ 
-  isOpen, 
-  onClose, 
+export const AdminDashboard: React.FC<AdminDashboardProps> = ({
+  isOpen,
+  onClose,
   orders,
-  onClearHistory 
+  onClearHistory
 }) => {
   if (!isOpen) return null;
 
@@ -32,10 +33,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         if (!stats[key]) {
           stats[key] = { count: 0, revenue: 0 };
         }
-        
+
         // Count quantity
         stats[key].count += item.quantity;
-        
+
         // Calculate revenue for this item (including noodle add-on)
         const itemTotal = (item.basePrice + (item.isAddNoodle ? 10 : 0)) * item.quantity;
         stats[key].revenue += itemTotal;
@@ -63,11 +64,6 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         minute: '2-digit',
         second: '2-digit',
       });
-    };
-
-    const escapeCsv = (value: string | number) => {
-      const safe = String(value ?? '').replace(/"/g, '""');
-      return `"${safe}"`;
     };
 
     const header = [
@@ -106,17 +102,29 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       });
     });
 
-    const csvContent = [header, ...rows]
-      .map(row => row.map(escapeCsv).join(','))
-      .join('\n');
+    // Create workbook and worksheet
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.aoa_to_sheet([header, ...rows]);
 
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `orders-${new Date().toISOString().slice(0, 10)}.csv`;
-    link.click();
-    URL.revokeObjectURL(url);
+    // Set column widths
+    const wscols = [
+      { wch: 10 }, // 訂單編號
+      { wch: 20 }, // 下單時間
+      { wch: 10 }, // 用餐方式
+      { wch: 20 }, // 品項
+      { wch: 8 },  // 加麵
+      { wch: 8 },  // 數量
+      { wch: 20 }, // 備註
+      { wch: 10 }, // 單價
+      { wch: 10 }, // 小計
+      { wch: 10 }, // 訂單總計
+    ];
+    ws['!cols'] = wscols;
+
+    XLSX.utils.book_append_sheet(wb, ws, "營運報表");
+
+    // Generate Excel file
+    XLSX.writeFile(wb, `orders-${new Date().toISOString().slice(0, 10)}.xlsx`);
   };
 
   const formatDate = (dateString: string | Date) => {
@@ -130,27 +138,36 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-gray-900/50 backdrop-blur-sm"
         onClick={onClose}
       />
 
       {/* Drawer Panel */}
       <div className="relative w-full max-w-2xl bg-gray-50 h-full shadow-2xl flex flex-col animate-slide-in-right overflow-hidden">
-        
+
         {/* Header */}
         <div className="bg-gray-900 text-white p-4 flex justify-between items-center shadow-md shrink-0">
           <div className="flex items-center gap-2">
             <TrendingUp className="text-yellow-400" />
             <h2 className="text-xl font-bold">今日營運報表</h2>
           </div>
-          <button onClick={onClose} className="p-2 hover:bg-gray-700 rounded-full transition-colors">
-            <X size={24} />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={exportReport}
+              className="flex items-center gap-2 px-3 py-2 text-sm font-medium text-amber-100 hover:text-white bg-amber-800 hover:bg-amber-700 rounded-lg transition-colors"
+            >
+              <FileDown size={18} />
+              <span>匯出報表</span>
+            </button>
+            <button onClick={onClose} className="p-2 hover:bg-gray-700 rounded-full transition-colors">
+              <X size={24} />
+            </button>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          
+
           {/* Summary Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-200">
@@ -199,9 +216,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 itemStats.map((item, index) => (
                   <div key={item.name} className="p-3 flex items-center justify-between hover:bg-gray-50">
                     <div className="flex items-center gap-3">
-                      <span className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold ${
-                        index < 3 ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-500'
-                      }`}>
+                      <span className={`w-6 h-6 flex items-center justify-center rounded-full text-xs font-bold ${index < 3 ? 'bg-yellow-100 text-yellow-700' : 'bg-gray-100 text-gray-500'
+                        }`}>
                         {index + 1}
                       </span>
                       <span className="font-medium text-gray-700">{item.name}</span>
@@ -219,56 +235,56 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           {/* Recent Orders Log */}
           <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div className="p-4 border-b bg-gray-50">
-               <h3 className="font-bold text-gray-800 flex items-center gap-2">
+              <h3 className="font-bold text-gray-800 flex items-center gap-2">
                 <Calendar size={18} />
                 訂單紀錄
               </h3>
             </div>
             <div className="divide-y max-h-96 overflow-y-auto">
-               {orders.length === 0 ? (
-                 <div className="p-8 text-center text-gray-400">尚無訂單</div>
-               ) : (
-                 [...orders].reverse().map((order) => (
-                   <div key={order.orderNumber} className="p-4 hover:bg-gray-50 transition-colors">
-                     <div className="flex justify-between items-start mb-2">
-                       <div>
-                         <span className="font-mono font-bold text-gray-500">#{order.orderNumber}</span>
-                         <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${order.orderType === 'dine-in' ? 'bg-amber-100 text-amber-700' : 'bg-stone-200 text-stone-700'}`}>
-                           {order.orderType === 'dine-in' ? '內用' : '外帶'}
-                         </span>
-                       </div>
-                       <span className="text-sm text-gray-400">{formatDate(order.timestamp)}</span>
-                     </div>
-                     <div className="text-sm text-gray-600 space-y-1 pl-4 border-l-2 border-gray-200 mb-2">
-                       {order.items.map((item, idx) => (
-                         <div key={idx} className="flex justify-between">
-                            <span>{item.name} {item.isAddNoodle && '(+麵)'} x{item.quantity}</span>
-                         </div>
-                       ))}
-                     </div>
-                     <div className="text-right font-bold text-gray-800">
-                       總計: ${order.totalAmount}
-                     </div>
-                   </div>
-                 ))
-               )}
+              {orders.length === 0 ? (
+                <div className="p-8 text-center text-gray-400">尚無訂單</div>
+              ) : (
+                [...orders].reverse().map((order) => (
+                  <div key={order.orderNumber} className="p-4 hover:bg-gray-50 transition-colors">
+                    <div className="flex justify-between items-start mb-2">
+                      <div>
+                        <span className="font-mono font-bold text-gray-500">#{order.orderNumber}</span>
+                        <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${order.orderType === 'dine-in' ? 'bg-amber-100 text-amber-700' : 'bg-stone-200 text-stone-700'}`}>
+                          {order.orderType === 'dine-in' ? '內用' : '外帶'}
+                        </span>
+                      </div>
+                      <span className="text-sm text-gray-400">{formatDate(order.timestamp)}</span>
+                    </div>
+                    <div className="text-sm text-gray-600 space-y-1 pl-4 border-l-2 border-gray-200 mb-2">
+                      {order.items.map((item, idx) => (
+                        <div key={idx} className="flex justify-between">
+                          <span>{item.name} {item.isAddNoodle && '(+麵)'} x{item.quantity}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div className="text-right font-bold text-gray-800">
+                      總計: ${order.totalAmount}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
 
         {/* Footer Actions */}
         <div className="p-4 bg-white border-t border-gray-200 shrink-0">
-           <button 
-             onClick={() => {
-                if(window.confirm('確定要清除所有今日資料嗎？此操作無法復原。')) {
-                    onClearHistory();
-                }
-             }}
-             className="w-full flex items-center justify-center gap-2 text-amber-800 bg-amber-100 hover:bg-amber-200 py-3 rounded-xl font-bold transition-colors"
-           >
-             <Trash2 size={20} />
-             每日結帳 (清除資料)
-           </button>
+          <button
+            onClick={() => {
+              if (window.confirm('確定要清除所有今日資料嗎？此操作無法復原。')) {
+                onClearHistory();
+              }
+            }}
+            className="w-full flex items-center justify-center gap-2 text-amber-800 bg-amber-100 hover:bg-amber-200 py-3 rounded-xl font-bold transition-colors"
+          >
+            <Trash2 size={20} />
+            每日結帳 (清除資料)
+          </button>
         </div>
 
       </div>
