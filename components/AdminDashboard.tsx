@@ -1,6 +1,6 @@
 import React, { useMemo } from 'react';
 import { CompletedOrder } from '../types';
-import { X, TrendingUp, ShoppingBag, DollarSign, ListOrdered, Trash2, Calendar } from 'lucide-react';
+import { X, TrendingUp, ShoppingBag, DollarSign, ListOrdered, Trash2, Calendar, FileDown } from 'lucide-react';
 
 interface AdminDashboardProps {
   isOpen: boolean;
@@ -47,6 +47,77 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       .map(([name, data]) => ({ name, ...data }))
       .sort((a, b) => b.count - a.count);
   }, [orders]);
+
+  const exportReport = () => {
+    if (orders.length === 0) {
+      window.alert('目前沒有訂單可匯出。');
+      return;
+    }
+
+    const formatTimestamp = (value: string | Date) => {
+      return new Date(value).toLocaleString('zh-TW', {
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      });
+    };
+
+    const escapeCsv = (value: string | number) => {
+      const safe = String(value ?? '').replace(/"/g, '""');
+      return `"${safe}"`;
+    };
+
+    const header = [
+      '訂單編號',
+      '下單時間',
+      '用餐方式',
+      '品項',
+      '加麵',
+      '數量',
+      '備註',
+      '單價',
+      '小計',
+      '訂單總計',
+    ];
+
+    const rows = orders.flatMap(order => {
+      const timestamp = formatTimestamp(order.timestamp);
+      const orderTypeLabel = order.orderType === 'dine-in' ? '內用' : '外帶';
+
+      return order.items.map(item => {
+        const unitPrice = item.basePrice + (item.isAddNoodle ? 10 : 0);
+        const lineTotal = unitPrice * item.quantity;
+
+        return [
+          order.orderNumber,
+          timestamp,
+          orderTypeLabel,
+          item.name,
+          item.isAddNoodle ? '是' : '否',
+          item.quantity,
+          item.remarks || '',
+          unitPrice,
+          lineTotal,
+          order.totalAmount,
+        ];
+      });
+    });
+
+    const csvContent = [header, ...rows]
+      .map(row => row.map(escapeCsv).join(','))
+      .join('\n');
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `orders-${new Date().toISOString().slice(0, 10)}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  };
 
   const formatDate = (dateString: string | Date) => {
     const date = new Date(dateString);
