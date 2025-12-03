@@ -11,7 +11,7 @@ interface CartDrawerProps {
   removeFromCart: (index: number) => void;
   orderType: OrderType;
   setOrderType: (type: OrderType) => void;
-  onCheckout: () => void;
+  onCheckout: (details?: { tableNumber?: string; customerInfo?: { lastName: string; title: 'Mr' | 'Ms'; phone: string } }) => void;
 }
 
 export const CartDrawer: React.FC<CartDrawerProps> = ({
@@ -25,6 +25,44 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   setOrderType,
   onCheckout
 }) => {
+  // Checkout Form State
+  const [tableNumber, setTableNumber] = React.useState<string>('');
+  const [customerName, setCustomerName] = React.useState('');
+  const [customerTitle, setCustomerTitle] = React.useState<'Mr' | 'Ms'>('Mr');
+  const [customerPhone, setCustomerPhone] = React.useState('');
+
+  // Reset form when opening/closing or changing order type
+  React.useEffect(() => {
+    if (isOpen) {
+      setTableNumber('');
+      setCustomerName('');
+      setCustomerTitle('Mr');
+      setCustomerPhone('');
+    }
+  }, [isOpen, orderType]);
+
+  const handleCheckout = () => {
+    if (orderType === 'dine-in') {
+      if (!tableNumber) {
+        alert('請選擇桌號');
+        return;
+      }
+      onCheckout({ tableNumber });
+    } else {
+      if (!customerName.trim() || !customerPhone.trim()) {
+        alert('請填寫完整聯絡資訊');
+        return;
+      }
+      onCheckout({
+        customerInfo: {
+          lastName: customerName.trim(),
+          title: customerTitle,
+          phone: customerPhone.trim()
+        }
+      });
+    }
+  };
+
   const totalAmount = useMemo(() => {
     return cart.reduce((sum, item) => {
       const unitPrice = item.basePrice + (item.isAddNoodle ? 10 : 0);
@@ -37,14 +75,14 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   return (
     <div className="fixed inset-0 z-50 flex justify-end">
       {/* Backdrop */}
-      <div 
+      <div
         className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity"
         onClick={onClose}
       />
 
       {/* Drawer */}
       <div className="relative w-full max-w-md bg-white h-full shadow-2xl flex flex-col animate-slide-in-right">
-        
+
         {/* Header */}
         <div className="p-4 border-b bg-amber-700 text-amber-50 flex justify-between items-center shadow-md">
           <div className="flex items-center space-x-2">
@@ -58,23 +96,83 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
         {/* Order Type Toggle */}
         <div className="p-4 bg-gray-50 border-b">
-            <div className="flex bg-gray-200 rounded-lg p-1">
-                <button 
-                    onClick={() => setOrderType('dine-in')}
-                    className={`flex-1 flex items-center justify-center space-x-2 py-2 rounded-md text-sm font-bold transition-all ${orderType === 'dine-in' ? 'bg-white text-amber-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                >
-                    <Utensils size={16} />
-                    <span>內用</span>
-                </button>
-                <button 
-                    onClick={() => setOrderType('takeout')}
-                    className={`flex-1 flex items-center justify-center space-x-2 py-2 rounded-md text-sm font-bold transition-all ${orderType === 'takeout' ? 'bg-white text-amber-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
-                >
-                    <ShoppingBag size={16} />
-                    <span>外帶</span>
-                </button>
-            </div>
+          <div className="flex bg-gray-200 rounded-lg p-1">
+            <button
+              onClick={() => setOrderType('dine-in')}
+              className={`flex-1 flex items-center justify-center space-x-2 py-2 rounded-md text-sm font-bold transition-all ${orderType === 'dine-in' ? 'bg-white text-amber-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              <Utensils size={16} />
+              <span>內用</span>
+            </button>
+            <button
+              onClick={() => setOrderType('takeout')}
+              className={`flex-1 flex items-center justify-center space-x-2 py-2 rounded-md text-sm font-bold transition-all ${orderType === 'takeout' ? 'bg-white text-amber-700 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              <ShoppingBag size={16} />
+              <span>外帶</span>
+            </button>
+          </div>
+
+          {/* Dynamic Form based on Order Type */}
+          <div className="mt-4 animate-fade-in">
+            {orderType === 'dine-in' ? (
+              <div>
+                <label className="block text-sm font-bold text-gray-700 mb-2">選擇桌號</label>
+                <div className="flex gap-2">
+                  {['1', '2', '3', '4', '5'].map(num => (
+                    <button
+                      key={num}
+                      onClick={() => setTableNumber(num)}
+                      className={`flex-1 aspect-square rounded-lg font-bold text-lg transition-all ${tableNumber === num
+                        ? 'bg-amber-600 text-white shadow-md scale-105'
+                        : 'bg-white border border-gray-200 text-gray-600 hover:border-amber-400'
+                        }`}
+                    >
+                      {num}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex gap-3">
+                  <div className="flex-1">
+                    <label className="block text-sm font-bold text-gray-700 mb-1">姓氏</label>
+                    <input
+                      type="text"
+                      value={customerName}
+                      onChange={(e) => setCustomerName(e.target.value)}
+                      placeholder="例如: 林"
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none"
+                    />
+                  </div>
+                  <div className="w-1/3">
+                    <label className="block text-sm font-bold text-gray-700 mb-1">稱謂</label>
+                    <select
+                      value={customerTitle}
+                      onChange={(e) => setCustomerTitle(e.target.value as 'Mr' | 'Ms')}
+                      className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none"
+                    >
+                      <option value="Mr">先生</option>
+                      <option value="Ms">小姐</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-gray-700 mb-1">電話號碼</label>
+                  <input
+                    type="tel"
+                    value={customerPhone}
+                    onChange={(e) => setCustomerPhone(e.target.value)}
+                    placeholder="09xx-xxx-xxx"
+                    className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-amber-500 outline-none"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
         </div>
+
 
         {/* Cart Items */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50">
@@ -82,7 +180,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             <div className="h-full flex flex-col items-center justify-center text-gray-400 space-y-4">
               <ChefHat size={64} className="opacity-20" />
               <p className="text-lg">購物車是空的</p>
-              <button 
+              <button
                 onClick={onClose}
                 className="text-amber-700 font-medium hover:underline"
               >
@@ -109,41 +207,41 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 </div>
 
                 <div className="flex items-center justify-between mt-3">
-                    {/* Quantity Controls */}
-                    <div className="flex items-center space-x-3 bg-gray-50 rounded-lg p-1 border border-gray-200">
-                        <button 
-                            onClick={() => updateQuantity(index, -1)}
-                            className="p-1 hover:bg-white rounded shadow-sm disabled:opacity-50 text-gray-600"
-                            disabled={item.quantity <= 1}
-                        >
-                            <Minus size={14} />
-                        </button>
-                        <span className="w-6 text-center font-bold text-gray-700">{item.quantity}</span>
-                        <button 
-                            onClick={() => updateQuantity(index, 1)}
-                            className="p-1 hover:bg-white rounded shadow-sm text-gray-600"
-                        >
-                            <Plus size={14} />
-                        </button>
-                    </div>
-
-                    <button 
-                        onClick={() => removeFromCart(index)}
-                        className="text-gray-400 hover:text-amber-600 p-2 transition-colors"
+                  {/* Quantity Controls */}
+                  <div className="flex items-center space-x-3 bg-gray-50 rounded-lg p-1 border border-gray-200">
+                    <button
+                      onClick={() => updateQuantity(index, -1)}
+                      className="p-1 hover:bg-white rounded shadow-sm disabled:opacity-50 text-gray-600"
+                      disabled={item.quantity <= 1}
                     >
-                        <Trash2 size={18} />
+                      <Minus size={14} />
                     </button>
+                    <span className="w-6 text-center font-bold text-gray-700">{item.quantity}</span>
+                    <button
+                      onClick={() => updateQuantity(index, 1)}
+                      className="p-1 hover:bg-white rounded shadow-sm text-gray-600"
+                    >
+                      <Plus size={14} />
+                    </button>
+                  </div>
+
+                  <button
+                    onClick={() => removeFromCart(index)}
+                    className="text-gray-400 hover:text-amber-600 p-2 transition-colors"
+                  >
+                    <Trash2 size={18} />
+                  </button>
                 </div>
 
                 {/* Remarks Input */}
                 <div className="mt-3">
-                    <input
-                        type="text"
-                        placeholder="備註 (例如: 不要蔥, 小辣)"
-                        value={item.remarks}
-                        onChange={(e) => updateRemarks(index, e.target.value)}
-                        className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-all placeholder:text-gray-400"
-                    />
+                  <input
+                    type="text"
+                    placeholder="備註 (例如: 不要蔥, 小辣)"
+                    value={item.remarks}
+                    onChange={(e) => updateRemarks(index, e.target.value)}
+                    className="w-full text-sm bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 focus:outline-none focus:ring-1 focus:ring-amber-500 focus:border-amber-500 transition-all placeholder:text-gray-400"
+                  />
                 </div>
               </div>
             ))
@@ -158,7 +256,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
               <span className="text-2xl font-bold text-amber-700">${totalAmount}</span>
             </div>
             <button
-              onClick={onCheckout}
+              onClick={handleCheckout}
               className="w-full bg-amber-700 text-amber-50 py-3.5 rounded-xl font-bold text-lg shadow-lg shadow-amber-200 active:scale-[0.98] hover:bg-amber-800 transition-all flex items-center justify-center space-x-2"
             >
               <span>確認下單</span>

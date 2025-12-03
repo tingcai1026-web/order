@@ -31,4 +31,10 @@ export interface CompletedOrder {
   totalAmount: number;
   orderType: OrderType;
   timestamp: Date;
+  tableNumber?: string; // For dine-in
+  customerInfo?: {      // For takeout
+    lastName: string;
+    title: 'Mr' | 'Ms';
+    phone: string;
+  };
 }

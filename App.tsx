@@ -120,7 +120,7 @@ const App: React.FC = () => {
     setCart(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleCheckout = () => {
+  const handleCheckout = (details?: { tableNumber?: string; customerInfo?: { lastName: string; title: 'Mr' | 'Ms'; phone: string } }) => {
     const total = cart.reduce((sum, item) => sum + (item.basePrice + (item.isAddNoodle ? 10 : 0)) * item.quantity, 0);
 
     // Generate a random 3-digit order number for demo purposes
@@ -131,7 +131,8 @@ const App: React.FC = () => {
       items: [...cart], // Copy cart items
       totalAmount: total,
       orderType: orderType,
-      timestamp: new Date()
+      timestamp: new Date(),
+      ...details // Spread the optional details (tableNumber or customerInfo)
     };
 
     setCompletedOrder(newOrder);

@@ -29,6 +29,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onUpdateOrder
 }) => {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
+  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
   const [editingOrder, setEditingOrder] = useState<CompletedOrder | null>(null);
 
   // Price Editing State
@@ -48,16 +49,24 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
 
 
-  // 1. Calculate Summary Stats
-  const totalRevenue = orders.reduce((sum, order) => sum + (order?.totalAmount || 0), 0);
-  const totalOrders = orders.length;
+  // 1. Filter Orders by Date
+  const filteredOrders = useMemo(() => {
+    return orders.filter(order => {
+      const orderDate = new Date(order.timestamp).toISOString().split('T')[0];
+      return orderDate === selectedDate;
+    });
+  }, [orders, selectedDate]);
+
+  // 2. Calculate Summary Stats
+  const totalRevenue = filteredOrders.reduce((sum, order) => sum + (order?.totalAmount || 0), 0);
+  const totalOrders = filteredOrders.length;
   const avgOrderValue = totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0;
 
   // 2. Calculate Item Statistics
   const itemStats = useMemo(() => {
     const stats: Record<string, { count: number; revenue: number }> = {};
 
-    orders.forEach(order => {
+    filteredOrders.forEach(order => {
       if (!order || !Array.isArray(order.items)) return;
 
       order.items.forEach(item => {
@@ -80,12 +89,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     return Object.entries(stats)
       .map(([name, data]) => ({ name, ...data }))
       .sort((a, b) => b.count - a.count);
-  }, [orders]);
+  }, [filteredOrders]);
 
   if (!isOpen) return null;
 
   const exportReport = () => {
-    if (orders.length === 0) {
+    if (filteredOrders.length === 0) {
       window.alert('目前沒有訂單可匯出。');
       return;
     }
@@ -105,6 +114,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       '訂單編號',
       '下單時間',
       '用餐方式',
+      '桌號/客戶資訊',
       '品項',
       '加麵',
       '數量',
@@ -114,10 +124,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       '訂單總計',
     ];
 
-    const rows = orders.flatMap(order => {
+    const rows = filteredOrders.flatMap(order => {
       if (!order || !Array.isArray(order.items)) return [];
       const timestamp = formatTimestamp(order.timestamp);
       const orderTypeLabel = order.orderType === 'dine-in' ? '內用' : '外帶';
+      const customerDetail = order.orderType === 'dine-in'
+        ? `桌號: ${order.tableNumber || '未指定'}`
+        : `${order.customerInfo?.lastName}${order.customerInfo?.title === 'Mr' ? '先生' : '小姐'} (${order.customerInfo?.phone})`;
 
       return order.items.map(item => {
         if (!item) return [];
@@ -128,6 +141,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           order.orderNumber,
           timestamp,
           orderTypeLabel,
+          customerDetail,
           item.name,
           item.isAddNoodle ? '是' : '否',
           item.quantity,
@@ -148,6 +162,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       { wch: 10 }, // 訂單編號
       { wch: 20 }, // 下單時間
       { wch: 10 }, // 用餐方式
+      { wch: 25 }, // 桌號/客戶資訊
       { wch: 20 }, // 品項
       { wch: 8 },  // 加麵
       { wch: 8 },  // 數量
@@ -279,6 +294,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                 <span>匯出報表</span>
               </button>
             )}
+            <div className="flex items-center bg-gray-800 rounded-lg px-3 py-2 text-white gap-2">
+              <Calendar size={18} className="text-gray-400" />
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => setSelectedDate(e.target.value)}
+                className="bg-transparent border-none outline-none text-sm font-medium text-white [&::-webkit-calendar-picker-indicator]:invert"
+              />
+            </div>
             <button onClick={onClose} className="p-2 hover:bg-gray-700 rounded-full transition-colors">
               <X size={24} />
             </button>
@@ -362,10 +386,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   </h3>
                 </div>
                 <div className="divide-y max-h-96 overflow-y-auto">
-                  {orders.length === 0 ? (
+                  {filteredOrders.length === 0 ? (
                     <div className="p-8 text-center text-gray-400">尚無訂單</div>
                   ) : (
-                    [...orders].reverse().map((order) => (
+                    [...filteredOrders].reverse().map((order) => (
                       <div key={order.orderNumber} className="p-4 hover:bg-gray-50 transition-colors group">
                         <div className="flex justify-between items-start mb-2">
                           <div>
@@ -373,6 +397,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             <span className={`ml-2 text-xs px-2 py-0.5 rounded-full ${order.orderType === 'dine-in' ? 'bg-amber-100 text-amber-700' : 'bg-stone-200 text-stone-700'}`}>
                               {order.orderType === 'dine-in' ? '內用' : '外帶'}
                             </span>
+                            {order.orderType === 'dine-in' && order.tableNumber && (
+                              <span className="ml-2 text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full font-bold">
+                                桌號 {order.tableNumber}
+                              </span>
+                            )}
+                            {order.orderType === 'takeout' && order.customerInfo && (
+                              <span className="ml-2 text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-bold">
+                                {order.customerInfo.lastName}{order.customerInfo.title === 'Mr' ? '先生' : '小姐'}
+                              </span>
+                            )}
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="text-sm text-gray-400">{formatDate(order.timestamp)}</span>
