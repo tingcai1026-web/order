@@ -20,7 +20,7 @@ export const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ order, onC
   return (
     <div className="fixed inset-0 z-50 bg-gray-900/90 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-300">
       <div className="bg-white w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-        
+
         {/* Header - Success Message */}
         <div className="bg-green-600 p-6 text-center text-white shrink-0">
           <div className="flex justify-center mb-3">
@@ -33,29 +33,28 @@ export const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ order, onC
         {/* Order Info & Number */}
         <div className="p-4 bg-green-50 border-b border-green-100 flex justify-between items-center shrink-0">
           <div>
-            <p className="text-xs text-green-800 font-bold uppercase tracking-wider mb-1">?��??�碼</p>
+            <p className="text-xs text-green-800 font-bold uppercase tracking-wider mb-1">取餐號碼</p>
             <p className="text-3xl font-black text-green-700">#{order.orderNumber}</p>
           </div>
           <div className="text-right">
-             <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-bold ${
-                order.orderType === 'dine-in' 
-                  ? 'bg-amber-100 text-amber-700' 
-                  : 'bg-orange-100 text-orange-700'
-             }`}>
-                {order.orderType === 'dine-in' ? <Utensils size={14} /> : <ShoppingBag size={14} />}
-                {order.orderType === 'dine-in' ? '內用' : '外帶'}
-             </div>
-             <div className="mt-1 text-xs text-gray-500 flex items-center justify-end gap-1">
-               <Clock size={12} />
-               {formatDate(order.timestamp)}
-             </div>
+            <div className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-sm font-bold ${order.orderType === 'dine-in'
+              ? 'bg-amber-100 text-amber-700'
+              : 'bg-orange-100 text-orange-700'
+              }`}>
+              {order.orderType === 'dine-in' ? <Utensils size={14} /> : <ShoppingBag size={14} />}
+              {order.orderType === 'dine-in' ? '內用' : '外帶'}
+            </div>
+            <div className="mt-1 text-xs text-gray-500 flex items-center justify-end gap-1">
+              <Clock size={12} />
+              {formatDate(order.timestamp)}
+            </div>
           </div>
         </div>
 
         {/* Receipt Content - Scrollable */}
         <div className="flex-1 overflow-y-auto p-6 bg-white relative">
           <div className="absolute top-0 left-0 w-full h-4 bg-gradient-to-b from-black/5 to-transparent pointer-events-none"></div>
-          
+
           <div className="space-y-6">
             <div className="flex items-center gap-2 text-gray-800 font-bold border-b pb-2">
               <Receipt size={20} />
@@ -103,7 +102,7 @@ export const OrderConfirmation: React.FC<OrderConfirmationProps> = ({ order, onC
             className="w-full bg-gray-900 text-white py-3.5 rounded-xl font-bold text-lg shadow-lg hover:bg-black active:scale-[0.98] transition-all flex items-center justify-center gap-2"
           >
             <Home size={20} />
-            <span>回到首頁 / 下一筆訂</span>
+            <span>回到首頁 / 下一筆訂單</span>
           </button>
         </div>
       </div>

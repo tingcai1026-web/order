@@ -17,6 +17,17 @@ const App: React.FC = () => {
   const [completedOrder, setCompletedOrder] = useState<CompletedOrder | null>(null);
   const [orderHistory, setOrderHistory] = useState<CompletedOrder[]>([]);
 
+  // Initialize menu items from localStorage or constants
+  const [menuItems, setMenuItems] = useState<MenuItem[]>(() => {
+    const savedMenu = localStorage.getItem('tainan_nabeyaki_menu');
+    return savedMenu ? JSON.parse(savedMenu) : MENU_ITEMS;
+  });
+
+  // Save menu items to local storage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('tainan_nabeyaki_menu', JSON.stringify(menuItems));
+  }, [menuItems]);
+
   // Load history from local storage on mount
   useEffect(() => {
     const savedOrders = localStorage.getItem('tainan_nabeyaki_orders');
@@ -36,14 +47,30 @@ const App: React.FC = () => {
 
   // Group items by category for rendering
   const itemsByCategory = useMemo(() => {
-    return MENU_ITEMS.reduce((acc, item) => {
+    return menuItems.reduce((acc, item) => {
       if (!acc[item.category]) {
         acc[item.category] = [];
       }
       acc[item.category].push(item);
       return acc;
     }, {} as Record<Category, MenuItem[]>);
-  }, []);
+  }, [menuItems]);
+
+  const handleAddMenuItem = (newItem: MenuItem) => {
+    setMenuItems(prev => [...prev, newItem]);
+  };
+
+  const handleUpdateMenuItem = (updatedItem: MenuItem) => {
+    setMenuItems(prev => prev.map(item =>
+      item.id === updatedItem.id ? updatedItem : item
+    ));
+  };
+
+  const handleUpdateOrder = (updatedOrder: CompletedOrder) => {
+    setOrderHistory(prev => prev.map(order =>
+      order.orderNumber === updatedOrder.orderNumber ? updatedOrder : order
+    ));
+  };
 
   const addToCart = (item: MenuItem, isAddNoodle: boolean) => {
     setCart(prev => {
@@ -93,7 +120,7 @@ const App: React.FC = () => {
 
   const handleCheckout = () => {
     const total = cart.reduce((sum, item) => sum + (item.basePrice + (item.isAddNoodle ? 10 : 0)) * item.quantity, 0);
-    
+
     // Generate a random 3-digit order number for demo purposes
     const randomOrderNumber = Math.floor(Math.random() * 900 + 100).toString();
 
@@ -142,9 +169,9 @@ const App: React.FC = () => {
                   <a href="tel:0933038130" className="flex items-center gap-1 hover:text-amber-50 transition-colors">
                     <Phone size={14} /> 0933-038-130
                   </a>
-                  <a 
-                    href="https://www.google.com/maps/search/?api=1&query=大里區文化街83-1號" 
-                    target="_blank" 
+                  <a
+                    href="https://www.google.com/maps/search/?api=1&query=大里區文化街83-1號"
+                    target="_blank"
                     rel="noreferrer"
                     className="flex items-center gap-1 hover:text-amber-50 transition-colors"
                   >
@@ -152,40 +179,40 @@ const App: React.FC = () => {
                   </a>
                 </div>
               </div>
-              
+
               {/* Mobile Admin Button (visible on small screens next to title) */}
-              <button 
+              <button
                 onClick={() => setIsAdminOpen(true)}
                 className="md:hidden p-2 text-amber-200 hover:text-amber-50 bg-amber-900/40 rounded-full"
               >
                 <ClipboardList size={20} />
               </button>
             </div>
-            
-            <div className="flex items-center gap-3 w-full md:w-auto">
-                {/* Search Bar */}
-                <div className="relative flex-1 md:w-64">
-                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                       <Search size={16} className="text-amber-200" />
-                   </div>
-                   <input 
-                      type="text" 
-                      placeholder="搜尋菜單..." 
-                        className="w-full bg-amber-900 text-amber-50 placeholder-amber-200 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:bg-amber-950 transition-all"
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                   />
-                </div>
 
-                {/* Desktop Admin Button */}
-                <button 
-                    onClick={() => setIsAdminOpen(true)}
-                      className="hidden md:flex items-center gap-2 px-3 py-2 text-sm font-medium text-amber-100 hover:text-amber-50 bg-amber-900 hover:bg-amber-700 rounded-lg transition-colors"
-                    title="營運報表"
-                >
-                    <ClipboardList size={18} />
-                    <span>報表</span>
-                </button>
+            <div className="flex items-center gap-3 w-full md:w-auto">
+              {/* Search Bar */}
+              <div className="relative flex-1 md:w-64">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <Search size={16} className="text-amber-200" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="搜尋菜單..."
+                  className="w-full bg-amber-900 text-amber-50 placeholder-amber-200 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 focus:bg-amber-950 transition-all"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+
+              {/* Desktop Admin Button */}
+              <button
+                onClick={() => setIsAdminOpen(true)}
+                className="hidden md:flex items-center gap-2 px-3 py-2 text-sm font-medium text-amber-100 hover:text-amber-50 bg-amber-900 hover:bg-amber-700 rounded-lg transition-colors"
+                title="營運報表"
+              >
+                <ClipboardList size={18} />
+                <span>報表</span>
+              </button>
             </div>
           </div>
         </div>
@@ -198,14 +225,13 @@ const App: React.FC = () => {
                 key={category}
                 onClick={() => {
                   setActiveCategory(category);
-                  setSearchTerm(''); 
+                  setSearchTerm('');
                   document.getElementById(category)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 }}
-                className={`py-3 px-4 text-sm font-bold border-b-2 transition-colors ${
-                  activeCategory === category
-                    ? 'border-amber-50 text-amber-50'
-                    : 'border-transparent text-amber-100 hover:text-amber-50'
-                }`}
+                className={`py-3 px-4 text-sm font-bold border-b-2 transition-colors ${activeCategory === category
+                  ? 'border-amber-50 text-amber-50'
+                  : 'border-transparent text-amber-100 hover:text-amber-50'
+                  }`}
               >
                 {category}
               </button>
@@ -219,7 +245,7 @@ const App: React.FC = () => {
         {CATEGORIES_ORDER.map(category => {
           const items = itemsByCategory[category] || [];
           const displayItems = filteredItems(items);
-          
+
           if (displayItems.length === 0) return null;
 
           return (
@@ -230,25 +256,25 @@ const App: React.FC = () => {
                 </h2>
                 <div className="h-px bg-gray-200 flex-1"></div>
               </div>
-              
+
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
                 {displayItems.map(item => (
-                  <MenuCard 
-                    key={item.id} 
-                    item={item} 
-                    onAddToCart={addToCart} 
+                  <MenuCard
+                    key={item.id}
+                    item={item}
+                    onAddToCart={addToCart}
                   />
                 ))}
               </div>
             </section>
           );
         })}
-        
+
         {/* Empty Search State */}
-        {MENU_ITEMS.filter(item => item.name.includes(searchTerm)).length === 0 && (
-           <div className="text-center py-12 text-gray-500">
-             <p>找不到符合 "{searchTerm}" 的餐點</p>
-           </div>
+        {menuItems.filter(item => item.name.includes(searchTerm)).length === 0 && (
+          <div className="text-center py-12 text-gray-500">
+            <p>找不到符合 "{searchTerm}" 的餐點</p>
+          </div>
         )}
       </main>
 
@@ -267,17 +293,17 @@ const App: React.FC = () => {
             )}
           </div>
           <span className="font-bold">
-             查看購物車
+            查看購物車
           </span>
           {cart.length > 0 && (
-              <span className="border-l border-amber-800 pl-3 text-sm font-normal text-amber-100">
-                  ${cart.reduce((sum, item) => sum + (item.basePrice + (item.isAddNoodle ? 10 : 0)) * item.quantity, 0)}
-              </span>
+            <span className="border-l border-amber-800 pl-3 text-sm font-normal text-amber-100">
+              ${cart.reduce((sum, item) => sum + (item.basePrice + (item.isAddNoodle ? 10 : 0)) * item.quantity, 0)}
+            </span>
           )}
         </button>
       </div>
 
-      <CartDrawer 
+      <CartDrawer
         isOpen={isCartOpen}
         onClose={() => setIsCartOpen(false)}
         cart={cart}
@@ -291,18 +317,22 @@ const App: React.FC = () => {
 
       {/* Order Confirmation Modal */}
       {completedOrder && (
-        <OrderConfirmation 
-          order={completedOrder} 
-          onClose={handleCloseConfirmation} 
+        <OrderConfirmation
+          order={completedOrder}
+          onClose={handleCloseConfirmation}
         />
       )}
 
       {/* Admin Dashboard */}
-      <AdminDashboard 
+      <AdminDashboard
         isOpen={isAdminOpen}
         onClose={() => setIsAdminOpen(false)}
         orders={orderHistory}
         onClearHistory={handleClearHistory}
+        menuItems={menuItems}
+        onUpdateMenuItem={handleUpdateMenuItem}
+        onAddMenuItem={handleAddMenuItem}
+        onUpdateOrder={handleUpdateOrder}
       />
     </div>
   );
