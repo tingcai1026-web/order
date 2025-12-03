@@ -5,6 +5,7 @@ import { MenuCard } from './components/MenuCard';
 import { CartDrawer } from './components/CartDrawer';
 import { OrderConfirmation } from './components/OrderConfirmation';
 import { AdminDashboard } from './components/AdminDashboard';
+import { CartReminderModal } from './components/CartReminderModal';
 import { ShoppingCart, Phone, MapPin, Search, ClipboardList } from 'lucide-react';
 
 const App: React.FC = () => {
@@ -147,6 +148,30 @@ const App: React.FC = () => {
     setOrderHistory([]);
     localStorage.removeItem('tainan_nabeyaki_orders');
     setIsAdminOpen(false);
+  };
+
+  // Cart reminder logic
+  const [showCartReminder, setShowCartReminder] = useState(false);
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+
+    if (cart.length > 0 && !isCartOpen && !completedOrder) {
+      // Reset timer whenever cart changes (dependency array)
+      // Set to 1 minute (60000ms)
+      timer = setTimeout(() => {
+        setShowCartReminder(true);
+      }, 60000);
+    }
+
+    return () => {
+      if (timer) clearTimeout(timer);
+    };
+  }, [cart, isCartOpen, completedOrder]);
+
+  const handleReminderCheckout = () => {
+    setIsCartOpen(true);
+    setShowCartReminder(false);
   };
 
   const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
@@ -323,6 +348,13 @@ const App: React.FC = () => {
           onClose={handleCloseConfirmation}
         />
       )}
+
+      {/* Cart Reminder Modal */}
+      <CartReminderModal
+        isOpen={showCartReminder}
+        onClose={() => setShowCartReminder(false)}
+        onCheckout={handleReminderCheckout}
+      />
 
       {/* Admin Dashboard */}
       <AdminDashboard
